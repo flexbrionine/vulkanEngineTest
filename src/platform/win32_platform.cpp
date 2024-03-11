@@ -18,7 +18,7 @@ LRESULT CALLBACK platform_window_callback(HWND window, UINT msg, WPARAM wParam, 
     
 }
 
-bool platform_create_window(HWND window) {
+bool platform_create_window(HWND *window) {
     HINSTANCE inst = GetModuleHandleA(0);
 
     WNDCLASS wc = {};
@@ -28,24 +28,24 @@ bool platform_create_window(HWND window) {
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
     if (!RegisterClassA(&wc)) {
-        MessageBox(window, "Window class is not regitered!", "Error", MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(0, "Window class is not regitered!", "Error", MB_ICONEXCLAMATION | MB_OK);
         return false;
     }
     
-    window = CreateWindowExA(
+    *window = CreateWindowExA(
         WS_EX_APPWINDOW,
         "vulkan_engine_class",
         "Refractor",
         WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPED,
-        100, 100, 1600, 720, 0, 0, inst, 0);
+        100, 100, 800, 720, 0, 0, inst, 0);
 
     if (window == 0)
     {
-        MessageBoxA(window, "Faild creating window!", "Error", MB_ICONEXCLAMATION | MB_OK);
+        MessageBoxA(0, "Faild creating window!", "Error", MB_ICONEXCLAMATION | MB_OK);
         return false;
     } 
     
-    ShowWindow(window, SW_SHOW);
+    ShowWindow(*window, SW_SHOW);
 
     return true;
 }
@@ -64,19 +64,20 @@ int main() {
 
     HWND window = 0;
 
-    if (!platform_create_window(window)) {
+    if (!platform_create_window(&window)) {
         return -1;
     }
     
+
+    if (!vk_init(&vkContext, &window)) {
+        return -1;
+    }
+
+
     while (running) {
         platform_update_window(window);
-    }
-
-    if (!vk_init(&vkContext))
-    {
-        return -1;
+        // vk_render(&vkContext);
     }
     
-
     return 0;
 }
